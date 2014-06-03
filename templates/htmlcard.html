@@ -1,0 +1,50 @@
+{% macro catagory(text_height,h_gap, list, id) %}
+  <input type=radio name="catagory" id = "button_{{ id }}">
+    <label class = "button" for=button_{{ id }} title='{{ list[1].capitalize() }}'>
+      <div style="float:left; margin-top: -0.6em; margin-left: -1.5em;">{{ list[0] }}</div>
+      <div style="float:right; margin-top: -0.6em; margin-right: -1.5em;">{{ list[2] }}</div>
+    </label>
+  </input>
+{% endmacro %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Example Card</title>
+    <link href="{{ url_for('static', filename='css/rounded.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/jquery-ui-1.10.4.custom.css') }}" rel="stylesheet" type="text/css">
+  </head>
+  <body>
+    <div class = "outline shadow rounded", style = "width: 23em; height: 33em; background-color: #0B369C;">
+      <div style = "width: {{ inner_width }}em; margin: 0 auto;">
+	<div class="outline top_rounded", style="height: {{ text_height }}em; padding: 0px; margin-top: 1em; background-color: #B7B7D4; margin: 0;">
+	  <h4 style="padding-top: {{ text_height/10+0.2 }}em;">{{ card_data[0] }}</h4>
+	</div>
+	<div class="outline" style = "margin-top: 0.5em; padding-top: 0px; margin-left: 0px; padding-left: 0px; padding-bottom: 0.5em; margin-bottom: 0px;">
+	  <img style="width:{{ inner_width }}em; height:{{ inner_width }}em;" border="0" src="{{ card_data[1] }}" alt="{{ card_data[0] }}">
+	</div>
+	<div id="button_set">
+	  {% for list in card_data[2] %}
+          {{ catagory(text_height,h_gap, list, loop.index) }}
+	  {% endfor %}
+	</div>
+      </div>
+    </div>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+    
+    <script>
+      $('.button_1').hover(function(){$(this).toggleClass('forum_hover');});
+      
+      $("input").button().click(function (event){
+    alert(this.id);
+      });
+      $("#button_set").buttonset();
+    </script>
+  </body>
+</html>
+

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Top Trumps{% endblock %}</title>
+
+    <link href="{{ url_for('static', filename='bootstrap/css/bootstrap.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css" />
+    {% block head %}
+    {% endblock %}
+  </head>
+  <body>
+    <div class="container" style="height: 100%; width: 90%;">
+      <div class="navbar navbar-default" role="navigation">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="/">Home</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="/about">About</a></li>
+	    <li><a href="#">New Game</a></li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+	  </ul>
+        </div>
+      </div>    
+
+    {% block body %}
+    {% endblock %}
+    </div>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+  <script>
+    $.ajaxSetup ({
+        cache: false
+    });
+    </script>
+  {% block scripts %}
+  {% endblock %}  
+  </body>
+</html>

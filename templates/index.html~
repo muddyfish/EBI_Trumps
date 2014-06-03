@@ -1,0 +1,28 @@
+{% extends "navbar.html" %}
+{% block head %}
+  <link href="{{ url_for('static', filename='css/rounded.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/jquery-ui-1.10.4.custom.css') }}" rel="stylesheet" type="text/css">
+{% endblock %}
+
+{% block body %}
+  <span id="display1" style="float: left;"></span>
+  <span id="display2" style="float: right;"></span>
+{% endblock %}
+{% block scripts %}
+  <script>
+//    $("#button1").button().click (function (event) {
+    window.onload = function() {
+
+    $("#display1").html ("").load("/card?id=2");
+    $("#display2").html ("").load("/card?id=3", function() {
+
+      $("input").button().click(function (event) {
+        $.post( "buttonsubmit", { button: this.id} );
+        alert(this.id);
+        alert( $.cookie("example") );
+        });
+             });
+    };
+  </script>
+
+{% endblock %}
