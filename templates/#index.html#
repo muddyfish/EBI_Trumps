@@ -17,7 +17,7 @@
 
       $("input").button().click(function (event) {
         $.post( "buttonsubmit", { button: this.id}, function(data) {          
-          $("#display2").html ("").load("/card?id="+data);
+          $("#display2").repl(data)
           });        
         });
       });

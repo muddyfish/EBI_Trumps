@@ -1,5 +1,6 @@
-from flask import Flask, request, redirect, render_template, session
-import json, random, string, sys
+from flask import Flask, request, redirect, render_template, session, send_file
+import json, random, string, sys, time, copy
+import numpy, Image, StringIO
 
 def getYN(text):
     response = ""
@@ -34,6 +35,15 @@ fileObj = open(contents["species"])
 species = json.load(fileObj)
 fileObj.close()
 
+@app.route("/error")
+def getErrorImage():
+    imarray = numpy.random.rand(64, 64, 3) * 255
+    im = Image.fromarray(imarray.astype('uint8')).convert('RGB')
+    output = StringIO.StringIO()
+    im.save(output, format="PNG")
+    output.seek(0)
+    return send_file(output, mimetype='image/png')
+
 def getError(e):
     return [e.__class__.__name__, "error", [["", "Error!", e.message]], 555]
 
@@ -47,10 +57,11 @@ def getCardData(filename, id):
     except (ValueError, IndexError), e:
         card_data = getError(e)
     else:
-        for i, value in enumerate(species[species_name]):
+        localspecies = copy.deepcopy(species[species_name])
+        for i, value in enumerate(localspecies):
             if value[1].find("ength of the") != -1:
-                species[species_name][i][2] = "{:10.1f} Gb".format(value[2]/float(1000000000))
-        card_data = [species_name.replace("_", " ").title(), getImageName(species_name), species[species_name], id]
+                localspecies[i][2] = "{:10.1f} Gb".format(value[2]/float(1000000000))
+        card_data = [species_name.replace("_", " ").title(), getImageName(species_name), localspecies, id]
     return render_template(filename, text_height=2, h_gap=0.1, inner_width=17.8, card_data=card_data)
 
 @app.route("/htmlcard")
@@ -62,12 +73,22 @@ def card():
 
 @app.route("/buttonsubmit", methods=["POST"])
 def buttonSubmit():
-    print request.form["button"]
-    return "Success!"
+    chosen = [int(i) for i in request.form["button"].split("_")[1:]]
+    chosen[1]-=1
+    catagories = [species[species.keys()[chosen[0]]][chosen[1]][2], species[species.keys()[session['cards'][1]]][chosen[1]][2]]
+    print catagories
+#    session['cards'][1]+=1
+    output = StringIO.StringIO()
+    output.write(session['cards'][1])
+    output.seek(0)
+    return send_file(output, mimetype='text/plain')
 
 @app.route("/")
 def root():
-    return render_template("index.html")
+    if not session.has_key('seed'): session['seed'] = time.time()
+    if not session.has_key('cards'): session['cards'] = [0, 1]
+    cards = session['cards']
+    return render_template("index.html", cards = cards)
 
 if __name__ == "__main__":
     app.run(contents["url"])
