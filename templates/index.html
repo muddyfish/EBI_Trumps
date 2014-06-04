@@ -11,14 +11,26 @@
 {% block scripts %}
   <script>
     window.onload = function() {
+      $("#display1").html ("").load("/card?id={{ cards[0] }}");
+      $("#display2").html ("").load("/card?id={{ cards[1] }}", function() {
 
-    $("#display1").html ("").load("/card?id={{ cards[0] }}");
-    $("#display2").html ("").load("/card?id={{ cards[1] }}", function() {
-
-      $("input").button().click(function (event) {
-        $.post( "buttonsubmit", { button: this.id}, function(data) {          
-          $("#display2").html ("").load("/card?id="+data);
-          });        
+        $("input").button().click(function (event) {
+          $.post( "buttonsubmit", { button: this.id}, function(data) {
+            jsondata = JSON.parse(data);
+            $("#display"+(jsondata.won+1)).effect("highlight", "linear", 1000);
+            $("#display1").delay(1000);
+            $("#display1").fadeOut('fast', function() {
+              $("#display1").html ("").load("/card?id="+jsondata.cardids[0], function() {
+                $("#display1").fadeIn('fast')
+              });
+            });
+            $("#display2").delay(1000);
+            $("#display2").fadeOut('fast', function() {
+              $("#display2").html ("").load("/card?id="+jsondata.cardids[1], function() {
+                $("#display2").fadeIn('fast')
+              });
+            });
+          });
         });
       });
     };

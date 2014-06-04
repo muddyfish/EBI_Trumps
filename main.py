@@ -47,6 +47,9 @@ def getErrorImage():
 def getError(e):
     return [e.__class__.__name__, "error", [["", "Error!", e.message]], 555]
 
+def usesGigaBases(value):
+    return value[1].find("ength of the") != -1
+
 def getImageName(species_name):
     return "http://static.ensembl.org/i/species/64/" + species_name.capitalize() + ".png"
 
@@ -59,8 +62,7 @@ def getCardData(filename, id):
     else:
         localspecies = copy.deepcopy(species[species_name])
         for i, value in enumerate(localspecies):
-            if value[1].find("ength of the") != -1:
-                localspecies[i][2] = "{:10.1f} Gb".format(value[2]/float(1000000000))
+            if usesGigaBases(value): localspecies[i][2] = "{:10.1f} Gb".format(value[2]/float(1000000000))
         card_data = [species_name.replace("_", " ").title(), getImageName(species_name), localspecies, id]
     return render_template(filename, text_height=2, h_gap=0.1, inner_width=17.8, card_data=card_data)
 
@@ -76,10 +78,10 @@ def buttonSubmit():
     chosen = [int(i) for i in request.form["button"].split("_")[1:]]
     chosen[1]-=1
     catagories = [species[species.keys()[chosen[0]]][chosen[1]][2], species[species.keys()[session['cards'][1]]][chosen[1]][2]]
-    print catagories
+#    print catagories.index(max(catagories))
 #    session['cards'][1]+=1
     output = StringIO.StringIO()
-    output.write(session['cards'][1])
+    output.write(json.dumps({"cardids": session['cards'], "won": catagories.index(max(catagories))}))
     output.seek(0)
     return send_file(output, mimetype='text/plain')
 
