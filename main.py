@@ -1,20 +1,36 @@
 from flask import Flask, request, redirect, render_template, session
-import json, random, string
+import json, random, string, sys
 
-try:
-    fileObj = open("settings.json")
-    contents = json.load(fileObj)
-    fileObj.close()
-except IOError:
-    contents = {"secret": ''.join([random.SystemRandom().choice("{}{}{}".format(string.ascii_letters, string.digits, string.punctuation)) for i in range(100)])}
-    fileObj = open("settings.json", "w")
-    json.dump(contents, fileObj)
-    fileObj.close()
+def getYN(text):
+    response = ""
+    while response not in ["Y", "N"]:
+        response = raw_input(text+"\t").upper()
+    return response == "Y"
 
+def getUniversalSettings():
+    try:
+        fileObj = open("settings.json")
+        contents = json.load(fileObj)
+        fileObj.close()
+    except (IOError, ValueError), e:
+        if e.__class__.__name__ == "ValueError" and not getYN("There is an error in your settings.json file. Recreate it?"):
+            sys.exit()            
+        else:
+            print "Recreating settings.json"
+        contents = {"secret": ''.join([random.SystemRandom().choice("{}{}{}".format(string.ascii_letters, string.digits, string.punctuation)) for i in range(100)]), \
+                        "debug": True, \
+                        "url": "0.0.0.0", \
+                        "species": "species.json"}
+        fileObj = open("settings.json", "w")
+        json.dump(contents, fileObj)
+        fileObj.close()
+    return contents
+
+contents = getUniversalSettings()
 app = Flask(__name__)
-app.debug = True
+app.debug = contents["debug"]
 app.secret_key = contents["secret"]
-fileObj = open("species.json")
+fileObj = open(contents["species"])
 species = json.load(fileObj)
 fileObj.close()
 
@@ -54,4 +70,4 @@ def root():
     return render_template("index.html")
 
 if __name__ == "__main__":
-    app.run("0.0.0.0")
+    app.run(contents["url"])
