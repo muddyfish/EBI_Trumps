@@ -10,30 +10,40 @@
 {% endblock %}
 {% block scripts %}
   <script>
+    function submitMove(buttonid, turn) { //Support AJAX
+      $("input").prop("disabled",true);
+      $.post( "buttonsubmit", { button: buttonid, turn: turn}, function(data) { // When clicked, submit data
+        jsondata = JSON.parse(data); // Parse return
+         $("#cardborder_"+(jsondata.won+1)).animate({backgroundColor: "#7BA6FC"}, 500); // Flash the winner
+        $("#cardborder_"+(jsondata.won+1)).animate({backgroundColor: "#0B369C"}, 500); // ^
+        $("#display1").delay(1000); // Wait for completion
+        $("#display1").fadeOut('fast', function() { // Fade out
+          $("#display1").html ("").load("/card?id="+jsondata.cardids[0], function() { // Load new image
+            $("#display1").fadeIn('fast') // Fade in
+            });
+          });
+        $("#display2").delay(1000); // Repeat for display 2
+        $("#display2").fadeOut('fast', function() {
+          $("#display2").html ("").load("/card?id="+jsondata.cardids[1], function() {
+            $("#display2").fadeIn('fast')
+            if (jsondata.aiturn) {
+              
+              setTimeout(submitMove("button_"+jsondata.cardids[1]+"_"+jsondata.aimove, 1), 5000);
+              }
+            else {
+              $("input").prop("disabled",false);
+              }
+            });           
+          });
+        });
+      } 
+
+
     window.onload = function() {
       $("#display1").html ("").load("/card?id={{ cards[0] }}"); // load cards for first time
       $("#display2").html ("").load("/card?id={{ cards[1] }}"); // ^
       $("input").button(); //Create all buttons
-      $("body").on("click", "input", function () { //Support AJAX
-          $.post( "buttonsubmit", { button: this.id}, function(data) { // When clicked, submit data
-            jsondata = JSON.parse(data); // Parse return
-//            alert(jsondata.won);
-            $("#cardborder_"+(jsondata.won+1)).animate({backgroundColor: "#7BA6FC"}, 500); // Flash the winner
-            $("#cardborder_"+(jsondata.won+1)).animate({backgroundColor: "#0B369C"}, 500); // ^
-            $("#display1").delay(1000); // Wait for completion
-            $("#display1").fadeOut('fast', function() { // Fade out
-              $("#display1").html ("").load("/card?id="+jsondata.cardids[0], function() { // Load new image
-                $("#display1").fadeIn('fast') // Fade in
-              });
-            });
-            $("#display2").delay(1000); // Repeat for display 2
-            $("#display2").fadeOut('fast', function() {
-              $("#display2").html ("").load("/card?id="+jsondata.cardids[1], function() {
-                $("#display2").fadeIn('fast')
-              });
-            });
-          });    
-        });
+      $("body").on("click", "input", {buttonid: this.id}, function() {submitMove(this.id, 0);});
     }
   </script>
 

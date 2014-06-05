@@ -45,7 +45,7 @@ def getErrorImage():
     return send_file(output, mimetype='image/png')
 
 def getError(e):
-    return [e.__class__.__name__, "error", [["", "Error!", e.message]], 555]
+    return [e.__class__.__name__, "error", [["", "Error!", e.message]], 555, "MissingNo"]
 
 def usesGigaBases(value):
     return value[1].find("ength of the") != -1
@@ -60,11 +60,14 @@ def getCardData(filename, id):
     except (ValueError, IndexError), e:
         card_data = getError(e)
     else:
-        localspecies = copy.deepcopy(species[species_name])
+        localspecies = copy.deepcopy(species[species_name]["catagories"])
+        localspeciessplash =  copy.deepcopy(species[species_name]["image_splash"])
         for i, value in enumerate(localspecies):
-            if usesGigaBases(value): localspecies[i][2] = "{:10.1f} Gb".format(value[2]/float(1000000000))
+            localspecies[i].append(value[2])
+            if usesGigaBases(value):
+                localspecies[i][2] = "{:10.1f} Gb".format(value[2]/float(1000000000))
         card_data = [species_name.replace("_", " ").title(), getImageName(species_name), localspecies, id]
-    return render_template(filename, text_height=2, h_gap=0.1, inner_width=17.8, card_data=card_data)
+    return render_template(filename, text_height=2, h_gap=0.1, inner_width=17.8, card_data=card_data, image_splash = localspeciessplash)
 
 @app.route("/htmlcard")
 def htmlcard():
@@ -75,22 +78,44 @@ def card():
 
 @app.route("/buttonsubmit", methods=["POST"])
 def buttonSubmit():
+    turn = request.form["turn"]
     chosen = [int(i) for i in request.form["button"].split("_")[1:]]
     chosen[1]-=1
-    catagories = [species[species.keys()[chosen[0]]]          [chosen[1]][2], \
-                  species[species.keys()[session['cards'][1]]][chosen[1]][2]]
-#    print catagories.index(max(catagories))
-    won = session['cards'][catagories.index(max(catagories))]
-    session['cards'][0] = random.randrange(60)
-    session['cards'][1] = random.randrange(60)
+    catagories = [species[species.keys()[session['cards'][0]]]["catagories"][chosen[1]][2], \
+                  species[species.keys()[session['cards'][1]]]["catagories"][chosen[1]][2]]
+    print catagories.index(max(catagories))
+    aiturn = catagories.index(max(catagories))
+    aimove = None
+    won = session['cards'][aiturn]
+    session['deck'+str(catagories.index(max(catagories))+1)].extend(session['cards'])
+    del session['deck1'][0]
+    del session['deck2'][0]
+    session['cards'][0] = session['deck1'][0]
+    session['cards'][1] = session['deck2'][0]
+    if aiturn:
+        aicard = species[species.keys()[session['cards'][1]]]["catagories"]
+        print aicard
+        chosen = sorted(aicard, key = lambda x: x[3])[-1]
+        keys = species.keys()
+        for i in range(len(species[keys[session['cards'][1]]]["catagories"])):
+            if species[keys[session['cards'][1]]]["catagories"][i] == chosen:
+                aimove = i
     output = StringIO.StringIO()
-    output.write(json.dumps({"cardids": session['cards'], "won": won}))
+    output.write(json.dumps({"cardids": session['cards'], "won": won, "aiturn": bool(aiturn), "aimove": aimove}))
     output.seek(0)
     return send_file(output, mimetype='text/plain')
 
+@app.route("/about")
+def about():
+    return render_template("about.html")
+
 @app.route("/")
 def root():
-    if not session.has_key('seed'): session['seed'] = time.time()
+    if not session.has_key('deck1'):
+        deck = range(len(species))
+        random.shuffle(deck)
+        session['deck1'] = deck[:len(deck)/2]
+        session['deck2'] = deck[len(deck)/2:]
     if not session.has_key('cards'): session['cards'] = [0, 1]
     cards = session['cards']
     return render_template("index.html", cards = cards)
