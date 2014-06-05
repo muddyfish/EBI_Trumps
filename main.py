@@ -77,7 +77,8 @@ def card():
 def buttonSubmit():
     chosen = [int(i) for i in request.form["button"].split("_")[1:]]
     chosen[1]-=1
-    catagories = [species[species.keys()[chosen[0]]][chosen[1]][2], species[species.keys()[session['cards'][1]]][chosen[1]][2]]
+    catagories = [species[species.keys()[chosen[0]]]          [chosen[1]][2], \
+                  species[species.keys()[session['cards'][1]]][chosen[1]][2]]
 #    print catagories.index(max(catagories))
     won = session['cards'][catagories.index(max(catagories))]
     session['cards'][0] = random.randrange(60)
