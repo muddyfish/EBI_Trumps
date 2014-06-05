@@ -5,6 +5,15 @@
 {% endblock %}
 
 {% block body %}
+
+
+<br>
+<div class="progress vertical">
+  <div class="bar bar-success" style="height: 70%;width:100%"></div>
+  <div class="bar bar-warning" style="height: 20%;width:100%"></div>
+  <div class="bar bar-danger" style="height: 10%;width:100%"></div>
+</div>
+
   <span id="display1" style="float: left;"></span>
   <span id="display2" style="float: right;"></span>
 {% endblock %}
@@ -27,8 +36,9 @@
           $("#display2").html ("").load("/card?id="+jsondata.cardids[1], function() {
             $("#display2").fadeIn('fast')
             if (jsondata.aiturn) {
-              
-              setTimeout(submitMove("button_"+jsondata.cardids[1]+"_"+jsondata.aimove, 1), 5000);
+              $("#button_"+jsondata.cardids[1]+"_"+jsondata.aimove+"_b").addClass("ui-state-active");
+              $("#button_"+jsondata.cardids[1]+"_"+jsondata.aimove+"_b").removeClass("ui-state-default");
+              setTimeout(function() {submitMove("button_"+jsondata.cardids[1]+"_"+jsondata.aimove, 1); }, 1000);
               }
             else {
               $("input").prop("disabled",false);
