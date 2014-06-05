@@ -1,18 +1,17 @@
 {% extends "navbar.html" %}
 {% block head %}
-  <link href="{{ url_for('static', filename='css/rounded.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/custom.css') }}" rel="stylesheet">
   <link href="{{ url_for('static', filename='css/jquery-ui-1.10.4.custom.css') }}" rel="stylesheet" type="text/css">
 {% endblock %}
 
 {% block body %}
+  <div class="progress_outer" style="float: left; margin-top: 9px;">
+    <div class="progress_inner" id = "progress1"></div>        
+  </div>
 
-
-<br>
-<div class="progress vertical">
-  <div class="bar bar-success" style="height: 70%;width:100%"></div>
-  <div class="bar bar-warning" style="height: 20%;width:100%"></div>
-  <div class="bar bar-danger" style="height: 10%;width:100%"></div>
-</div>
+  <div class="progress_outer" style="float: right; margin-top: 9px;">
+    <div class="progress_inner" id = "progress2"></div>
+  </div>
 
   <span id="display1" style="float: left;"></span>
   <span id="display2" style="float: right;"></span>
@@ -23,7 +22,11 @@
       $("input").prop("disabled",true);
       $.post( "buttonsubmit", { button: buttonid, turn: turn}, function(data) { // When clicked, submit data
         jsondata = JSON.parse(data); // Parse return
-         $("#cardborder_"+(jsondata.won+1)).animate({backgroundColor: "#7BA6FC"}, 500); // Flash the winner
+
+        $("#progress1").animate({height: (jsondata.cards/jsondata.maxcards*100.0)+"%"}, 500);
+        $("#progress2").animate({height: (100-(jsondata.cards/jsondata.maxcards*100.0))+"%"}, 500);
+
+        $("#cardborder_"+(jsondata.won+1)).animate({backgroundColor: "#7BA6FC"}, 500); // Flash the winner
         $("#cardborder_"+(jsondata.won+1)).animate({backgroundColor: "#0B369C"}, 500); // ^
         $("#display1").delay(1000); // Wait for completion
         $("#display1").fadeOut('fast', function() { // Fade out

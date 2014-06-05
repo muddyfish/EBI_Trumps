@@ -1,5 +1,5 @@
-from flask import Flask, request, redirect, render_template, session, send_file
-import json, random, string, sys, time, copy
+from flask import Flask, request, redirect, render_template, session, send_file, url_for
+import json, random, copy
 import numpy, Image, StringIO
 
 def getYN(text):
@@ -67,7 +67,7 @@ def getCardData(filename, id):
             if usesGigaBases(value):
                 localspecies[i][2] = "{:10.1f} Gb".format(value[2]/float(1000000000))
         card_data = [species_name.replace("_", " ").title(), getImageName(species_name), localspecies, id]
-    return render_template(filename, text_height=2, h_gap=0.1, inner_width=17.8, card_data=card_data, image_splash = localspeciessplash)
+    return render_template(filename, card_data=card_data, image_splash = localspeciessplash)
 
 @app.route("/htmlcard")
 def htmlcard():
@@ -101,13 +101,18 @@ def buttonSubmit():
             if species[keys[session['cards'][1]]]["catagories"][i] == chosen:
                 aimove = i
     output = StringIO.StringIO()
-    output.write(json.dumps({"cardids": session['cards'], "won": won, "aiturn": bool(aiturn), "aimove": aimove}))
+    output.write(json.dumps({"cardids": session['cards'], "won": won, "aiturn": bool(aiturn), "aimove": aimove, "maxcards": len(species.keys()), "cards": len(session['deck1'])}))
     output.seek(0)
     return send_file(output, mimetype='text/plain')
 
 @app.route("/about")
 def about():
     return render_template("about.html")
+
+@app.route("/new_game")
+def new_game():
+    for i in dict(session).keys(): del session[i]
+    return redirect(url_for('root', region=None, ip=None))
 
 @app.route("/")
 def root():
@@ -116,7 +121,7 @@ def root():
         random.shuffle(deck)
         session['deck1'] = deck[:len(deck)/2]
         session['deck2'] = deck[len(deck)/2:]
-    if not session.has_key('cards'): session['cards'] = [0, 1]
+        session['cards'] = [session['deck1'][0], session['deck2'][0]]
     cards = session['cards']
     return render_template("index.html", cards = cards)
 
