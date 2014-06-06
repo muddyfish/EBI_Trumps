@@ -112,6 +112,12 @@ def buttonSubmit(): #When a button is pressed
 def base_static(filename):
     return send_from_directory(app.static_folder + '/images/', filename)
 
+@app.route("/vote_cute")
+def vote_cute():                                                                                                                                                                                                                                      
+    species_name = species.keys()
+    image1 = getImageName(species_name[0])
+    image2 = getImageName(species_name[1])
+    return render_template("vote_cute.html", image1 = image1, image2 = image2)
 
 @app.route("/about")
 def about(): #An about page

@@ -1,5 +1,4 @@
-import json
-import urllib2
+import json, urllib2, random
 import MySQLdb as sql
 db = sql.connect("ensembldb.ensembl.org", "anonymous", port = 5306) #Connect to ensembl sql server
 cur = db.cursor()
@@ -7,6 +6,11 @@ cur = db.cursor()
 def getVersion(): #Get the most up to date version of ensembl
     cur.execute("show databases like '%ensembl_production%'")
     return max([int(i[0].split("_")[2]) for i in cur.fetchall()])
+
+def addCuteness(species):
+    species_names = species.keys()
+    random.shuffle(species_names)
+    return species_names
 
 def addAI(species_data): #Sort the catagories and add an order of the best moves
     values = [sorted([[i[0], i[1][2]] for i in zip(species_data.keys(), catagory)], key=lambda x: x[1]) for catagory in zip(*[species_data[i]["catagories"] for i in species_data.keys()])]
@@ -18,7 +22,7 @@ def addAI(species_data): #Sort the catagories and add an order of the best moves
 
 def addSounds(version, species_name): #Get the sounds that the animal makes from the plugin repro
     data = urllib2.urlopen("https://raw.githubusercontent.com/Ensembl/public-plugins/release/"+ str(version) +"/ensembl/conf/ini-files/" + species_name.capitalize() + ".ini") #Get the correct url
-    try: #Does it have a sound?
+    try: #Does it have a sound?
         noise = data.read().split("ENSEMBL_SOUND")[1].split("=")[1][1:-1] #Get the sound
     except IndexError:
         noise = "" #No sound...
@@ -42,5 +46,9 @@ def main(): #Start!
     return species_data
 
 fileObj = open("species.json", "w")
-json.dump(addAI(main()), fileObj)
+species = addAI(main())
+json.dump(species, fileObj)
+fileObj.close()
+fileObj = open("cuteness.json", "w")
+json.dump(addCuteness(species), fileObj)
 fileObj.close()
