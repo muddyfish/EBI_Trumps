@@ -13,8 +13,20 @@
     <div class="progress_inner" id = "progress2"></div>
   </div>
 
+  <div id="wrapper" class="flip-container" style="float: right;">
+    <div class="flipper">
+      <div class="front">
+        <div id="cardback", class = "outline shadow rounded", style = "width: 23em; height: 33em; background-color: #0B369C;">
+	  <img border="0" src="im/ebang.png" alt="e!">
+	</div>
+      </div>
+      <div class="back">
+	<span id="display2"></span>
+      </div>
+    </div>
+  </div>
+
   <span id="display1" style="float: left;"></span>
-  <span id="display2" style="float: right;"></span>
 {% endblock %}
 {% block scripts %}
   <script>
@@ -22,6 +34,13 @@
       $("input").prop("disabled",true);
       $.post( "buttonsubmit", { button: buttonid, turn: turn}, function(data) { // When clicked, submit data
         jsondata = JSON.parse(data); // Parse return
+//        alert(jsondata.cards+" "+jsondata.maxcards);
+        if (jsondata.cards == jsondata.maxcards) {
+          document.location.href = '/youwon';
+          }
+        if (jsondata.cards == 0) {
+          document.location.href = '/youlost';
+          }
 
         $("#progress1").animate({height: (jsondata.cards/jsondata.maxcards*100.0)+"%"}, 500);
         $("#progress2").animate({height: (100-(jsondata.cards/jsondata.maxcards*100.0))+"%"}, 500);
@@ -34,22 +53,24 @@
             $("#display1").fadeIn('fast') // Fade in
             });
           });
+        $("#wrapper").addClass("flip")
         $("#display2").delay(1000); // Repeat for display 2
         $("#display2").fadeOut('fast', function() {
+          if (jsondata.aiturn) {
+            $("#button_"+jsondata.cardids[1]+"_"+jsondata.aimove+"_b").addClass("ui-state-active");
+            $("#button_"+jsondata.cardids[1]+"_"+jsondata.aimove+"_b").removeClass("ui-state-default");
+            setTimeout(function() {submitMove("button_"+jsondata.cardids[1]+"_"+jsondata.aimove, 1); }, 1000);
+            }
+          else {
+            $("input").prop("disbled",false);
+            $("#wrapper").removeClass("flip")
+            }
           $("#display2").html ("").load("/card?id="+jsondata.cardids[1], function() {
-            $("#display2").fadeIn('fast')
-            if (jsondata.aiturn) {
-              $("#button_"+jsondata.cardids[1]+"_"+jsondata.aimove+"_b").addClass("ui-state-active");
-              $("#button_"+jsondata.cardids[1]+"_"+jsondata.aimove+"_b").removeClass("ui-state-default");
-              setTimeout(function() {submitMove("button_"+jsondata.cardids[1]+"_"+jsondata.aimove, 1); }, 1000);
-              }
-            else {
-              $("input").prop("disabled",false);
-              }
-            });           
+            $("#display2").fadeIn('fast');
+            });          
           });
-        });
-      } 
+        });    
+      }
 
 
     window.onload = function() {

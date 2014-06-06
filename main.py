@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, render_template, session, send_file, url_for
+from flask import Flask, request, redirect, render_template, session, send_file, url_for, send_from_directory
 import json, random, copy
 import numpy, Image, StringIO
 
@@ -69,6 +69,10 @@ def getCardData(filename, id):
         card_data = [species_name.replace("_", " ").title(), getImageName(species_name), localspecies, id]
     return render_template(filename, card_data=card_data, image_splash = localspeciessplash)
 
+@app.route("/cardback")
+def cardback():
+    return render_template("cardback.html")
+
 @app.route("/htmlcard")
 def htmlcard():
     return getCardData("htmlcard.html", request.args["id"])
@@ -83,27 +87,34 @@ def buttonSubmit():
     chosen[1]-=1
     catagories = [species[species.keys()[session['cards'][0]]]["catagories"][chosen[1]][2], \
                   species[species.keys()[session['cards'][1]]]["catagories"][chosen[1]][2]]
-    print catagories.index(max(catagories))
     aiturn = catagories.index(max(catagories))
     aimove = None
     won = session['cards'][aiturn]
     session['deck'+str(catagories.index(max(catagories))+1)].extend(session['cards'])
-    del session['deck1'][0]
-    del session['deck2'][0]
-    session['cards'][0] = session['deck1'][0]
-    session['cards'][1] = session['deck2'][0]
-    if aiturn:
-        aicard = species[species.keys()[session['cards'][1]]]["catagories"]
-        print aicard
-        chosen = sorted(aicard, key = lambda x: x[3])[-1]
-        keys = species.keys()
-        for i in range(len(species[keys[session['cards'][1]]]["catagories"])):
-            if species[keys[session['cards'][1]]]["catagories"][i] == chosen:
-                aimove = i
+    try:
+        del session['deck1'][0]
+        del session['deck2'][0]
+    except IndexError: pass
+    if not (len(session['deck1']) == 0 or len(session['deck2']) == 0):
+        session['cards'][0] = session['deck1'][0]
+        session['cards'][1] = session['deck2'][0]
+        if aiturn:
+            aicard = species[species.keys()[session['cards'][1]]]["catagories"]
+            chosen = sorted(aicard, key = lambda x: x[3])[-1]
+            keys = species.keys()
+            for i in range(len(species[keys[session['cards'][1]]]["catagories"])):
+                if species[keys[session['cards'][1]]]["catagories"][i] == chosen:
+                    aimove = i
     output = StringIO.StringIO()
     output.write(json.dumps({"cardids": session['cards'], "won": won, "aiturn": bool(aiturn), "aimove": aimove, "maxcards": len(species.keys()), "cards": len(session['deck1'])}))
     output.seek(0)
     return send_file(output, mimetype='text/plain')
+
+
+@app.route('/im/<path:filename>')
+def base_static(filename):
+    return send_from_directory(app.static_folder + '/images/', filename)
+
 
 @app.route("/about")
 def about():
