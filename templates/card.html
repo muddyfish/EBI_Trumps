@@ -5,7 +5,7 @@
 
 {% macro catagory(text_height,h_gap, list, button_id, card_id) %}
   <input type=radio name="catagory" id = "button_{{ card_id }}_{{ button_id }}">
-    <label class = "button" for="button_{{ card_id }}_{{ button_id }}" title="{{ list[1].capitalize() }} - {{ list[4] }} ({{ list[3] }})" id="button_{{ card_id }}_{{ button_id }}_b">
+    <label class = "button" for="button_{{ card_id }}_{{ button_id }}" title="{{ list[1].capitalize() }} - {{ list[4] }}" id="button_{{ card_id }}_{{ button_id }}_b">
       <div style="float:left;">{{ list[0] }}</div>
       <div style="float:right;">{{ list[2] }}</div>
     </label>

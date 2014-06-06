@@ -1,20 +1,19 @@
 from flask import Flask, request, redirect, render_template, session, send_file, url_for, send_from_directory
-import json, random, copy
-import numpy, Image, StringIO
+import json, random, copy, StringIO
 
-def getYN(text):
+def getYN(text): #Get the answer to a yes or no question
     response = ""
     while response not in ["Y", "N"]:
         response = raw_input(text+"\t").upper()
     return response == "Y"
 
-def getUniversalSettings():
+def getUniversalSettings(): #Get the settings for the program
     try:
         fileObj = open("settings.json")
         contents = json.load(fileObj)
         fileObj.close()
     except (IOError, ValueError), e:
-        if e.__class__.__name__ == "ValueError" and not getYN("There is an error in your settings.json file. Recreate it?"):
+        if e.__class__.__name__ == "ValueError" and not getYN("There is an error in your settings.json file. Recreate it?"): #If you don't, exit
             sys.exit()            
         else:
             print "Recreating settings.json"
@@ -35,99 +34,97 @@ fileObj = open(contents["species"])
 species = json.load(fileObj)
 fileObj.close()
 
-@app.route("/error")
-def getErrorImage():
-    imarray = numpy.random.rand(64, 64, 3) * 255
-    im = Image.fromarray(imarray.astype('uint8')).convert('RGB')
-    output = StringIO.StringIO()
-    im.save(output, format="PNG")
-    output.seek(0)
-    return send_file(output, mimetype='image/png')
+try:
+    import numpy, Image #Not required for core
+except ImportError:
+    print "Numpy and PIL not found. Try installing them for nicer card errors."
+else:
+    @app.route("/error") #On the /error page 
+    def getErrorImage(): #Create a random image
+        imarray = numpy.random.rand(64, 64, 3) * 255 # 64x64 rgb image
+        im = Image.fromarray(imarray.astype('uint8')).convert('RGB')
+        output = StringIO.StringIO()
+        im.save(output, format="PNG")
+        output.seek(0)
+        return send_file(output, mimetype='image/png')
 
-def getError(e):
-    return [e.__class__.__name__, "error", [["", "Error!", e.message]], 555, "MissingNo"]
+def getError(e): #Get the card data from error messages
+    return [e.__class__.__name__, "error", [["", "Error!", e.message]], 555, "MissingNo"] #Error name, image location, catagories, card id, splash text
 
-def usesGigaBases(value):
+def usesGigaBases(value): #Does the catagory in question use Gigabases?
     return value[1].find("ength of the") != -1
 
-def getImageName(species_name):
+def getImageName(species_name): #Get the image URL given the species name
     return "http://static.ensembl.org/i/species/64/" + species_name.capitalize() + ".png"
 
-def getCardData(filename, id):
+def getCardData(filename, id): #Get the card data for a card with the given template and id.
     try:
         id = int(id)
         species_name = species.keys()[id]
-    except (ValueError, IndexError), e:
+    except (ValueError, IndexError), e: #Get the correct error message
         card_data = getError(e)
     else:
-        localspecies = copy.deepcopy(species[species_name]["catagories"])
-        localspeciessplash =  copy.deepcopy(species[species_name]["image_splash"])
+        localspecies = copy.deepcopy(species[species_name]["catagories"]) #Pointers...
+        localspeciessplash =  copy.deepcopy(species[species_name]["image_splash"]) #Again...
         for i, value in enumerate(localspecies):
             localspecies[i].append(value[2])
-            if usesGigaBases(value):
+            if usesGigaBases(value): #If useing gigabases, format them correctly
                 localspecies[i][2] = "{:10.1f} Gb".format(value[2]/float(1000000000))
         card_data = [species_name.replace("_", " ").title(), getImageName(species_name), localspecies, id]
     return render_template(filename, card_data=card_data, image_splash = localspeciessplash)
 
-@app.route("/cardback")
-def cardback():
-    return render_template("cardback.html")
-
-@app.route("/htmlcard")
-def htmlcard():
-    return getCardData("htmlcard.html", request.args["id"])
-@app.route("/card")
+@app.route("/card") #On /card
 def card():
     return getCardData("card.html", request.args["id"])
 
 @app.route("/buttonsubmit", methods=["POST"])
-def buttonSubmit():
-    turn = request.form["turn"]
-    chosen = [int(i) for i in request.form["button"].split("_")[1:]]
-    chosen[1]-=1
+def buttonSubmit(): #When a button is pressed
+    turn = request.form["turn"] #Who's turn is it?
+    chosen = [int(i) for i in request.form["button"].split("_")[1:]] #Get the card id that was chosem
+    chosen[1]-=1 #it is 1 based, python is 0 based
     catagories = [species[species.keys()[session['cards'][0]]]["catagories"][chosen[1]][2], \
                   species[species.keys()[session['cards'][1]]]["catagories"][chosen[1]][2]]
-    aiturn = catagories.index(max(catagories))
+    aiturn = catagories.index(max(catagories)) #Which card won?
     aimove = None
-    won = session['cards'][aiturn]
-    session['deck'+str(catagories.index(max(catagories))+1)].extend(session['cards'])
+    won = session['cards'][aiturn] #Who won?
+    session['deck'+str(catagories.index(max(catagories))+1)].extend(session['cards']) #Winners deck gets both cards.
     try:
-        del session['deck1'][0]
+        del session['deck1'][0] #Remove top card of both decks
         del session['deck2'][0]
-    except IndexError: pass
-    if not (len(session['deck1']) == 0 or len(session['deck2']) == 0):
-        session['cards'][0] = session['deck1'][0]
+    except IndexError: pass #Empty? don't care.
+    if not (len(session['deck1']) == 0 or len(session['deck2']) == 0): #Are they empty now?
+        session['cards'][0] = session['deck1'][0] #Set displayed cards to top card
         session['cards'][1] = session['deck2'][0]
-        if aiturn:
-            aicard = species[species.keys()[session['cards'][1]]]["catagories"]
-            chosen = sorted(aicard, key = lambda x: x[3])[-1]
+        if aiturn: 
+            aicard = species[species.keys()[session['cards'][1]]]["catagories"] #Get the ai's card
+            chosen = sorted(aicard, key = lambda x: x[3])[-1] #Sort the catagories by whats best
             keys = species.keys()
             for i in range(len(species[keys[session['cards'][1]]]["catagories"])):
-                if species[keys[session['cards'][1]]]["catagories"][i] == chosen:
+                if species[keys[session['cards'][1]]]["catagories"][i] == chosen: #Always choose what is best
                     aimove = i
     output = StringIO.StringIO()
-    output.write(json.dumps({"cardids": session['cards'], "won": won, "aiturn": bool(aiturn), "aimove": aimove, "maxcards": len(species.keys()), "cards": len(session['deck1'])}))
+    output.write(json.dumps({"cardids": session['cards'], "won": won, "aiturn": bool(aiturn), "aimove": aimove, "maxcards": len(species.keys()), "cards": len(session['deck1'])})) #Return json
     output.seek(0)
     return send_file(output, mimetype='text/plain')
 
 
-@app.route('/im/<path:filename>')
+@app.route('/im/<path:filename>') #on /im/<image path here>
 def base_static(filename):
     return send_from_directory(app.static_folder + '/images/', filename)
 
 
 @app.route("/about")
-def about():
+def about(): #An about page
     return render_template("about.html")
 
 @app.route("/new_game")
-def new_game():
+def new_game(): #Delete all cookies and redirect to root
     for i in dict(session).keys(): del session[i]
     return redirect(url_for('root', region=None, ip=None))
 
 @app.route("/")
 def root():
-    if not session.has_key('deck1'):
+    if not session.has_key('deck1'): #If there isn't a deck1, recreate every cookie
         deck = range(len(species))
         random.shuffle(deck)
         session['deck1'] = deck[:len(deck)/2]
