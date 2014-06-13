@@ -1,5 +1,5 @@
 from flask import Flask, request, redirect, render_template, session, send_file, url_for, send_from_directory
-import json, random, copy, StringIO
+import json, random, copy, StringIO, string
 
 def getYN(text): #Get the answer to a yes or no question
     response = ""
@@ -20,7 +20,8 @@ def getUniversalSettings(): #Get the settings for the program
         contents = {"secret": ''.join([random.SystemRandom().choice("{}{}{}".format(string.ascii_letters, string.digits, string.punctuation)) for i in range(100)]), \
                         "debug": True, \
                         "url": "0.0.0.0", \
-                        "species": "species.json"}
+                        "species": "species.json",
+                    "cuteness": "cuteness.json"}
         fileObj = open("settings.json", "w")
         json.dump(contents, fileObj)
         fileObj.close()
@@ -30,6 +31,7 @@ contents = getUniversalSettings()
 app = Flask(__name__)
 app.debug = contents["debug"]
 app.secret_key = contents["secret"]
+
 fileObj = open(contents["species"])
 species = json.load(fileObj)
 fileObj.close()
@@ -47,6 +49,12 @@ else:
         im.save(output, format="PNG")
         output.seek(0)
         return send_file(output, mimetype='image/png')
+
+def getCuteness():
+    fileObj = open(contents["cuteness"])
+    cuteness = json.load(fileObj)
+    fileObj.close()
+    return cuteness
 
 def getError(e): #Get the card data from error messages
     return [e.__class__.__name__, "error", [["", "Error!", e.message]], 555, "MissingNo"] #Error name, image location, catagories, card id, splash text
@@ -113,11 +121,21 @@ def base_static(filename):
     return send_from_directory(app.static_folder + '/images/', filename)
 
 @app.route("/vote_cute")
-def vote_cute():                                                                                                                                                                                                                                      
-    species_name = species.keys()
-    image1 = getImageName(species_name[0])
-    image2 = getImageName(species_name[1])
-    return render_template("vote_cute.html", image1 = image1, image2 = image2)
+def vote_cute():
+    cuteness = getCuteness()
+    index = random.randrange(len(cuteness)-1)
+    return render_template("vote_cute.html", index=index)
+
+@app.route("/cute_card")
+def cute_card():
+    try:
+        index = int(request.args["index"])
+        option = int(request.args["option"])
+        index += option
+        cuteness = getCuteness()
+        species_name = cuteness[index]
+    except (ValueError, TypeError): return ""
+    return '<img style="width:17.8em; height:17.8em;" border="0" src="%s" onclick="onClick(%s)">'%(getImageName(species_name), index)
 
 @app.route("/about")
 def about(): #An about page

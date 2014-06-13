@@ -7,11 +7,23 @@
 {% endblock %}
 {% block body %}
 <h3>Click the cutest!</h3>
-<img style="width:{{ inner_width }}em; height:{{ inner_width }}em;" border="0" src="{{ image1 }}">
-<img style="width:{{ inner_width }}em; height:{{ inner_width }}em;" border="0" src="{{ image2 }}">
+<div id="image0"></div>
+<div id="image1"></div>
 {% endblock %}
 {% block scripts %}
 <script>
+  function onClick(index) {
+    $("#image0").fadeOut('fast');    
+    $("#image0").html ("").load("/cute_card?index="+index+"&option=0", function() {
+      $("#image0").fadeIn('fast');
+      });
 
+    $("#image1").fadeOut('fast');
+    $("#image1").html ("").load("/cute_card?index="+index+"&option=1", function() {
+      $("#image1").fadeIn('fast');
+      });
+    }
+
+  onClick({{ index }});
 </script>
 {% endblock %}

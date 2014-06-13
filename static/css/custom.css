@@ -63,16 +63,32 @@ span{
 }
 
 .flip-container {
-    perspective: 1000;
+    -webkit-perspective: 1000px;
+    -moz-perspective: 1000px;
+    -ms-perspective: 1000px;
+    -o-perspective: 1000px;
+    perspective: 1000px;
+    -webkit-transform-style: preserve-3d;
+    -moz-transform-style: preserve-3d;
+    -ms-transform-style: preserve-3d;
+    -o-transform-style: preserve-3d;
     transform-style: preserve-3d;
 }
 
 .flip-container.flip .back {
     transform: rotateY(0deg);
+    -webkit-transform: rotateY(0deg);
+    -moz-transform: rotateY(0deg);
+    -ms-transform: rotateY(0deg);
+    -o-transform: rotateY(0deg);
     }
 .flip-container.flip .front {
-        transform: rotateY(180deg);
-	}
+    transform: rotateY(180deg);
+    -webkit-transform: rotateY(-180deg);
+    -moz-transform: rotateY(-180deg);
+    -ms-transform: rotateY(-180deg);
+    -o-transform: rotateY(-180deg);
+}
 
 .flip-container, .front, .back {
     width: 320px;
@@ -81,15 +97,35 @@ span{
 
 .flipper {
     transition: 0.6s;
+    -webkit-transition: 0.6s ease-out;
+    -moz-transition: 0.6s ease-out;
+    -ms-transition: 0.6s ease-out;
+    -o-transition: 0.6s ease-out;
     transform-style: preserve-3d;
-
+    -webkit-transform-style: preserve-3d;
+    -moz-transform-style: preserve-3d;
+    -ms-transform-style: preserve-3d;
+    -o-transform-style: preserve-3d;
     position: relative;
 }
 
 .front, .back {
     backface-visibility: hidden;
+    -moz-backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+
+
     transition: 0.6s;
+    -webkit-transition: 0.6s ease-out;
+    -moz-transition: 0.6s ease-out;
+    -ms-transition: 0.6s ease-out;
+    -o-transition: 0.6s ease-out;
+
     transform-style: preserve-3d;
+    -webkit-transform-style: preserve-3d;
+    -moz-transform-style: preserve-3d;
+    -ms-transform-style: preserve-3d;
+    -o-transform-style: preserve-3d;
 
     position: absolute;
     top: 0;
@@ -99,24 +135,16 @@ span{
 .front {
     z-index: 2;
     transform: rotateY(0deg);
+    -webkit-transform: rotateY(0deg);
+    -moz-transform: rotateY(0deg);
+    -ms-transform: rotateY(0deg);
+    -o-transform: rotateY(0deg);
 }
 
 .back {
     transform: rotateY(-180deg);
-}
-
-.vertical.flip-container {
-    position: relative;
-}
-
-.vertical .back {
-    transform: rotateX(180deg);
-}
-
-.vertical.flip-container .back {
-        transform: rotateX(0deg);
-}
-
-.vertical.flip-container.flip .front {
-        transform: rotateX(180deg);
+    -webkit-transform: rotateY(-180deg);
+    -moz-transform: rotateY(-180deg);
+    -ms-transform: rotateY(-180deg);
+    -o-transform: rotateY(-180deg);
 }
