@@ -13,9 +13,15 @@ Optional:
   *  PIL                         http://askubuntu.com/questions/156484/how-do-i-install-python-imaging-library-pil
 
 To run (First time)
+
 Install nginx (optional) and setup port forwarding?
+
 Go to correct directory
+
 run 'python sql_api.py'
+
 wait until it finishes
+
 run 'python main.py'
+
 site appears on localhost:5000
