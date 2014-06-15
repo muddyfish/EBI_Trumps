@@ -59,7 +59,7 @@
           if (jsondata.aiturn) {
             $("#button_"+jsondata.cardids[1]+"_"+jsondata.aimove+"_b").addClass("ui-state-active");
             $("#button_"+jsondata.cardids[1]+"_"+jsondata.aimove+"_b").removeClass("ui-state-default");
-            setTimeout(function() {submitMove("button_"+jsondata.cardids[1]+"_"+jsondata.aimove, 1); }, 1000);
+            setTimeout(function() {submitMove("button_"+jsondata.cardids[1]+"_"+jsondata.aimove, 1); }, 2000);
             }
           else {
             $("input").prop("disbled",false);

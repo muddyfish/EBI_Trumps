@@ -63,7 +63,7 @@ def usesGigaBases(value): #Does the catagory in question use Gigabases?
     return value[1].find("ength of the") != -1
 
 def getImageName(species_name): #Get the image URL given the species name
-    return "http://static.ensembl.org/i/species/64/" + species_name.capitalize() + ".png"
+    return url_for('static', filename='images/%s.png'%(species_name))
 
 def getCardData(filename, id): #Get the card data for a card with the given template and id.
     try:
