@@ -78,7 +78,7 @@ def getCardData(filename, id): #Get the card data for a card with the given temp
             localspecies[i].append(value[2])
             if usesGigaBases(value): #If useing gigabases, format them correctly
                 localspecies[i][2] = "{:10.1f} Gb".format(value[2]/float(1000000000))
-        card_data = [species_name.replace("_", " ").title(), getImageName(species_name), localspecies, id]
+        card_data = [[species[species_name]["common"], species_name.replace("_", " ").title()], getImageName(species_name), localspecies, id]
     return render_template(filename, card_data=card_data, image_splash = localspeciessplash)
 
 @app.route("/card") #On /card

@@ -1,7 +1,6 @@
-{% set text_height = 2 %}
+{% set text_height = 3 %}
 {% set h_gap = 0.1 %}
 {% set inner_width = 17.8 %}
-
 
 {% macro catagory(text_height,h_gap, list, button_id, card_id) %}
   <input type=radio name="catagory" id = "button_{{ card_id }}_{{ button_id }}">
@@ -15,7 +14,7 @@
 <div id="cardborder_{{ card_data[3]+1 }}", class = "outline shadow rounded", style = "width: 23em; height: 33em; background-color: #0B369C;">
   <div style = "width: {{ inner_width }}em; margin: 0 auto;">
     <div class="outline top_rounded", style="height: {{ text_height }}em; padding: 0px; margin-top: 1em; background-color: #B7B7D4; margin: 0;">
-      <h4 style="padding-top: {{ text_height/10+0.2 }}em;">{{ card_data[0] }}</h4>
+      <h4>{{ card_data[0][0] }}<br>{{ card_data[0][1] }}</h4>
       </div>
     <div class="outline" style = "margin-top: 0.5em; padding-top: 0px; margin-left: 0px; padding-left: 0px; padding-bottom: 0.5em; margin-bottom: 0px;">
       <img style="width:{{ inner_width }}em; height:{{ inner_width }}em;" border="0" src="{{ card_data[1] }}" alt="{{ card_data[0] }}" title="{{ image_splash }}">

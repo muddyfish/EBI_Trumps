@@ -40,8 +40,10 @@ def main(): #Start!
         cur.execute("select statistic, name, description, value from genome_statistics as gs, attrib_type as att where gs.attrib_type_id = att.attrib_type_id and (gs.attrib_type_id = 64 or gs.attrib_type_id = 405 or gs.attrib_type_id = 406 or gs.attrib_type_id = 403);") #If you want more catagories, extend this to include the attribute types you want
         data = sorted([list(i[1:]) for i in cur.fetchall()])
 #        print data
+        cur.execute("select meta_value from meta where meta_key = 'species.display_name';")
         species_data[species_name] = {}
         species_data[species_name]["catagories"] = data
+        species_data[species_name]["common"] = cur.fetchone()[0]
         species_data[species_name]["image_splash"] = addSounds(version, species_name)
     return species_data
 
