@@ -1,5 +1,5 @@
 from flask import Flask, request, redirect, render_template, session, send_file, url_for, send_from_directory
-import json, random, copy, StringIO, string
+import json, random, copy, StringIO, string, time
 
 def getYN(text): #Get the answer to a yes or no question
     response = ""
@@ -13,12 +13,12 @@ def getUniversalSettings(): #Get the settings for the program
         contents = json.load(fileObj)
         fileObj.close()
     except (IOError, ValueError), e:
-        if e.__class__.__name__ == "ValueError" and not getYN("There is an error in your settings.json file. Recreate it?"): #If you don't, exit
+        if e.__class__ is ValueError and not getYN("There is an error in your settings.json file. Recreate it?"): #If you don't, exit
             sys.exit()            
         else:
             print "Recreating settings.json"
         contents = {"secret": ''.join([random.SystemRandom().choice("{}{}{}".format(string.ascii_letters, string.digits, string.punctuation)) for i in range(100)]), \
-                        "debug": True, \
+                        "debug": False, \
                         "url": "0.0.0.0", \
                         "species": "species.json",
                     "cuteness": "cuteness.json"}
@@ -62,13 +62,16 @@ def getError(e): #Get the card data from error messages
 def usesGigaBases(value): #Does the catagory in question use Gigabases?
     return value[1].find("ength of the") != -1
 
+def usesDate(value):
+    return value[1].find("Date") != -1
+
 def getImageName(species_name): #Get the image URL given the species name
     return url_for('static', filename='images/%s.png'%(species_name))
 
 def getCardData(filename, id): #Get the card data for a card with the given template and id.
     try:
         id = int(id)
-        species_name = species.keys()[id]
+        species_name = sorted(species.keys())[id]
     except (ValueError, IndexError), e: #Get the correct error message
         card_data = getError(e)
     else:
@@ -78,7 +81,9 @@ def getCardData(filename, id): #Get the card data for a card with the given temp
             localspecies[i].append(value[2])
             if usesGigaBases(value): #If useing gigabases, format them correctly
                 localspecies[i][2] = "{:10.1f} Gb".format(value[2]/float(1000000000))
-        card_data = [[species[species_name]["common"], species_name.replace("_", " ").title()], getImageName(species_name), localspecies, id]
+            elif usesDate(value):
+                localspecies[i][2] = time.strftime("%b %Y", time.gmtime(-value[2]))
+        card_data = [[species[species_name]["common"], species_name.replace("_", " ").title()], getImageName(species_name), localspecies, species_name]
     return render_template(filename, card_data=card_data, image_splash = localspeciessplash)
 
 @app.route("/card") #On /card
@@ -88,10 +93,9 @@ def card():
 @app.route("/buttonsubmit", methods=["POST"])
 def buttonSubmit(): #When a button is pressed
     turn = request.form["turn"] #Who's turn is it?
-    chosen = [int(i) for i in request.form["button"].split("_")[1:]] #Get the card id that was chosem
-    chosen[1]-=1 #it is 1 based, python is 0 based
-    catagories = [species[species.keys()[session['cards'][0]]]["catagories"][chosen[1]][2], \
-                  species[species.keys()[session['cards'][1]]]["catagories"][chosen[1]][2]]
+    chosen = request.form["button"].split("_")[1:] #Get the card id that was chosen
+    chosen = ["_".join(chosen[:-1]), int(chosen[-1])-1]
+    catagories = [species[sorted(species.keys())[card]]["catagories"][chosen[1]][2] for card in session['cards']]
     aiturn = catagories.index(max(catagories)) #Which card won?
     aimove = None
     won = session['cards'][aiturn] #Who won?
@@ -104,9 +108,9 @@ def buttonSubmit(): #When a button is pressed
         session['cards'][0] = session['deck1'][0] #Set displayed cards to top card
         session['cards'][1] = session['deck2'][0]
         if aiturn: 
-            aicard = species[species.keys()[session['cards'][1]]]["catagories"] #Get the ai's card
-            chosen = sorted(aicard, key = lambda x: x[3])[-1] #Sort the catagories by whats best
-            keys = species.keys()
+            keys = sorted(species.keys())
+            aicard = species[keys[session['cards'][1]]]["catagories"] #Get the ai's card
+            chosen = sorted(aicard, key = lambda x: x[3])[-1] #Sort the catagories by what's best
             for i in range(len(species[keys[session['cards'][1]]]["catagories"])):
                 if species[keys[session['cards'][1]]]["catagories"][i] == chosen: #Always choose what is best
                     aimove = i

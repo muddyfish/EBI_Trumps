@@ -11,13 +11,13 @@
   </input>
 {% endmacro %}
 
-<div id="cardborder_{{ card_data[3]+1 }}", class = "outline shadow rounded", style = "width: 23em; height: 33em; background-color: #0B369C;">
+<div id="cardborder_{{ card_data[3] }}", class = "outline shadow rounded", style = "width: 23em; height: 35em; background-color: #0B369C;">
   <div style = "width: {{ inner_width }}em; margin: 0 auto;">
     <div class="outline top_rounded", style="height: {{ text_height }}em; padding: 0px; margin-top: 1em; background-color: #B7B7D4; margin: 0;">
-      <h4>{{ card_data[0][0] }}<br>{{ card_data[0][1] }}</h4>
+      <h4>{{ card_data[0][0] }}<br><i>{{ card_data[0][1] }}</i></h4>
       </div>
     <div class="outline" style = "margin-top: 0.5em; padding-top: 0px; margin-left: 0px; padding-left: 0px; padding-bottom: 0.5em; margin-bottom: 0px;">
-      <img style="width:{{ inner_width }}em; height:{{ inner_width }}em;" border="0" src="{{ card_data[1] }}" alt="{{ card_data[0] }}" title="{{ image_splash }}">
+      <img style="width:{{ inner_width }}em; height:{{ inner_width }}em;" border="0" src="{{ card_data[1] }}" alt="{{ image_splash }}" onError="this.src='http://static.ensembl.org/i/species/64/{{ card_data[0][1].capitalize().replace(" ", "_") }}.png';" title="{{ image_splash }}">
     </div>
     <div id="button_set_{{ card_data[3] }}">
       {% for list in card_data[2] %}

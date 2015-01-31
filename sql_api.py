@@ -1,4 +1,4 @@
-import json, urllib2, random
+import json, urllib2, random, time, calendar
 import MySQLdb as sql
 db = sql.connect("ensembldb.ensembl.org", "anonymous", port = 5306) #Connect to ensembl sql server
 cur = db.cursor()
@@ -23,13 +23,14 @@ def addAI(species_data): #Sort the catagories and add an order of the best moves
 def addSounds(version, species_name): #Get the sounds that the animal makes from the plugin repro
     data = urllib2.urlopen("https://raw.githubusercontent.com/Ensembl/public-plugins/release/"+ str(version) +"/ensembl/conf/ini-files/" + species_name.capitalize() + ".ini") #Get the correct url
     try: #Does it have a sound?
-        noise = data.read().split("ENSEMBL_SOUND")[1].split("=")[1][1:-1] #Get the sound
+        noise = data.read().split("ENSEMBL_SOUND")[1].split("=")[1][1:].split("\n")[0] #Get the sound
     except IndexError:
         noise = "" #No sound...
     return noise
 
 def main(): #Start!
     version = getVersion()
+    print  version
     cur.execute('show databases like "%core_'+str(version)+'_%";') #Get all species
     species = [i[0] for i in cur.fetchall()] #Fetch them
     species_data = {}
@@ -40,7 +41,10 @@ def main(): #Start!
         cur.execute("select statistic, name, description, value from genome_statistics as gs, attrib_type as att where gs.attrib_type_id = att.attrib_type_id and (gs.attrib_type_id = 64 or gs.attrib_type_id = 405 or gs.attrib_type_id = 406 or gs.attrib_type_id = 403);") #If you want more catagories, extend this to include the attribute types you want
         data = sorted([list(i[1:]) for i in cur.fetchall()])
 #        print data
-        cur.execute("select meta_value from meta where meta_key = 'species.display_name';")
+        cur.execute("select meta_value from meta where meta_key = 'assembly.date';")
+        date = calendar.timegm(time.strptime(cur.fetchone()[0], "%Y-%m"))
+        data.append(["Assembly Date", "Date last assembled", -date])
+        cur.execute("select meta_value from meta where meta_key = 'species.display_name';")  
         species_data[species_name] = {}
         species_data[species_name]["catagories"] = data
         species_data[species_name]["common"] = cur.fetchone()[0]
