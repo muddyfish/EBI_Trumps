@@ -1,6 +1,6 @@
 EBI Top Trumps
 ==========
-A game made in 5 days as part of work experiance
+A game written as part of my work experiance at the EBI
 
 Dependencies:
   *  Python 2.4 + (NOT 3)        python2.7
