@@ -25,7 +25,6 @@
       </div>
     </div>
   </div>
-
   <span id="display1" style="float: left;"></span>
 {% endblock %}
 {% block scripts %}
@@ -48,8 +47,9 @@
         $("#progress1").animate({height: (jsondata.cards/jsondata.maxcards*100.0)+"%"}, progress_delay);
         $("#progress2").animate({height: (100-(jsondata.cards/jsondata.maxcards*100.0))+"%"}, progress_delay);
 
-        $("#cardborder_"+(jsondata.won+1)).animate({backgroundColor: "#7BA6FC"}, win_flash); // Flash the winner
-        $("#cardborder_"+(jsondata.won+1)).animate({backgroundColor: "#0B369C"}, win_flash); // ^
+//        alert(jsondata.card_species[jsondata.aiturn]);
+        $("#cardborder_"+(jsondata.card_species[jsondata.aiturn])).animate({backgroundColor: "#7BA6FC"}, win_flash); // Flash the winner
+        $("#cardborder_"+(jsondata.card_species[jsondata.aiturn])).animate({backgroundColor: "#0B369C"}, win_flash); // ^
         $("#display1").delay(all_delay); // Wait for completion
         $("#display1").fadeOut('fast', function() { // Fade out
           $("#display1").html ("").load("/card?id="+jsondata.cardids[0], function() { // Load new image
@@ -68,11 +68,12 @@
             if (jsondata.aiturn) {
               setTimeout(function() {submitMove("button_"+jsondata.cardids[1]+"_"+jsondata.aimove, 1); }, ai_delay);
               var choice = jsondata.aimove+1;
-              $("#button_"+jsondata.cardids[0]+"_"+choice+"_b").addClass("ui-state-active");
-              $("#button_"+jsondata.cardids[0]+"_"+choice+"_b").removeClass("ui-state-default");
-              $("#button_"+jsondata.cardids[1]+"_"+choice+"_b").addClass("ui-state-active");
-              $("#button_"+jsondata.cardids[1]+"_"+choice+"_b").removeClass("ui-state-default");
-              //alert("button_"+jsondata.cardids[1]+"_"+(jsondata.aimove+1)+"_b");
+//              alert("#button_"+jsondata.card_species[0]+"_"+choice+"_b")
+              $("#button_"+jsondata.card_species_new[0]+"_"+choice+"_b").addClass("ui-state-active");
+              $("#button_"+jsondata.card_species_new[0]+"_"+choice+"_b").removeClass("ui-state-default");
+              $("#button_"+jsondata.card_species_new[1]+"_"+choice+"_b").addClass("ui-state-active");
+              $("#button_"+jsondata.card_species_new[1]+"_"+choice+"_b").removeClass("ui-state-default");
+              //alert("button_"+jsondata.card_species_new[1]+"_"+(jsondata.aimove+1)+"_b");
               }
             });
           });

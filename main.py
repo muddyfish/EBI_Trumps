@@ -99,7 +99,8 @@ def buttonSubmit(): #When a button is pressed
     aiturn = catagories.index(max(catagories)) #Which card won?
     aimove = None
     won = session['cards'][aiturn] #Who won?
-    session['deck'+str(catagories.index(max(catagories))+1)].extend(session['cards']) #Winners deck gets both cards.
+    card_species = [sorted(species.keys())[session['deck'+str(i)][0]] for i in [1,2]]
+    session['deck'+str(aiturn+1)].extend(session['cards']) #Winners deck gets both cards.
     try:
         del session['deck1'][0] #Remove top card of both decks
         del session['deck2'][0]
@@ -107,6 +108,7 @@ def buttonSubmit(): #When a button is pressed
     if not (len(session['deck1']) == 0 or len(session['deck2']) == 0): #Are they empty now?
         session['cards'][0] = session['deck1'][0] #Set displayed cards to top card
         session['cards'][1] = session['deck2'][0]
+        card_species_new = [sorted(species.keys())[session['deck'+str(i)][0]] for i in [1,2]]
         if aiturn: 
             keys = sorted(species.keys())
             aicard = species[keys[session['cards'][1]]]["catagories"] #Get the ai's card
@@ -115,7 +117,7 @@ def buttonSubmit(): #When a button is pressed
                 if species[keys[session['cards'][1]]]["catagories"][i] == chosen: #Always choose what is best
                     aimove = i
     output = StringIO.StringIO()
-    output.write(json.dumps({"cardids": session['cards'], "won": won, "aiturn": bool(aiturn), "aimove": aimove, "maxcards": len(species.keys()), "cards": len(session['deck1'])})) #Return json
+    output.write(json.dumps({"cardids": session['cards'], "won": won, "card_species": card_species, "card_species_new": card_species_new, "aiturn": aiturn, "aimove": aimove, "maxcards": len(species.keys()), "cards": len(session['deck1'])})) #Return json
     output.seek(0)
     return send_file(output, mimetype='text/plain')
 
